@@ -35,7 +35,7 @@
 #OPT_BOARD := stm32f205rc_skyward_stormtrooper
 #OPT_BOARD := stm32f401vc_stm32f4discovery
 #OPT_BOARD := stm32f103c8_breakout
-#OPT_BOARD := stm32f469ni_stm32f4discovery
+#OPT_BOARD := stm32f469ni_stm32f469i-disco
 
 ##
 ## Optimization flags, choose one.
@@ -387,9 +387,9 @@ ifeq ($(OPT_BOARD),stm32f103c8_breakout)
 endif
 
 ##---------------------------------------------------------------------------
-## stm32f469ni_stm32f4discovery
+## stm32f469ni_stm32f469i-disco
 ##
-ifeq ($(OPT_BOARD),stm32f469ni_stm32f4discovery)
+ifeq ($(OPT_BOARD),stm32f469ni_stm32f469i-disco)
 
     LINKER_SCRIPT_PATH := arch/cortexM4_stm32f4/stm32f469ni_stm32f469i-disco/
     #LINKER_SCRIPT := $(LINKER_SCRIPT_PATH)stm32_2m+384k_rom.ld
@@ -470,7 +470,7 @@ else ifeq ($(OPT_BOARD),stm32f401vc_stm32f4discovery)
     ARCH := cortexM4_stm32f4
 else ifeq ($(OPT_BOARD),stm32f103c8_breakout)
     ARCH := cortexM3_stm32
-else ifeq ($(OPT_BOARD),stm32f469ni_stm32f4discovery)
+else ifeq ($(OPT_BOARD),stm32f469ni_stm32f469i-disco)
     ARCH := cortexM4_stm32f4
 else
     $(info Error: no board specified in miosix/config/Makefile.inc)
@@ -1161,9 +1161,9 @@ else ifeq ($(ARCH),cortexM4_stm32f4)
         PROGRAM_CMDLINE := qstlink2 -cqewV ./main.bin
 
     ##-------------------------------------------------------------------------
-    ## BOARD: stm32f469ni_stm32f4discovery
+    ## BOARD: stm32f469ni_stm32f469i-disco
     ##
-    else ifeq ($(OPT_BOARD),stm32f469ni_stm32f4discovery)
+    else ifeq ($(OPT_BOARD),stm32f469ni_stm32f469i-disco)
 
         ## Base directory with header files for this board
         BOARD_INC := arch/cortexM4_stm32f4/stm32f469ni_stm32f469i-disco
@@ -1181,8 +1181,8 @@ else ifeq ($(ARCH),cortexM4_stm32f4)
         $(BOARD_INC)/interfaces-impl/bsp.cpp
 
         ## Add a #define to allow querying board name
-        CFLAGS_BASE   += -D_BOARD_STM32F469NI_STM32F4DISCOVERY
-        CXXFLAGS_BASE += -D_BOARD_STM32F469NI_STM32F4DISCOVERY
+        CFLAGS_BASE   += -D_BOARD_STM32F469NI_STM32F469I-DISCO
+        CXXFLAGS_BASE += -D_BOARD_STM32F469NI_STM32F469I-DISCO
 
         ## Select programmer command line
         ## This is the program that is invoked when the user types
