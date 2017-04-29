@@ -74,6 +74,8 @@ const bool defaultSerialFlowctrl=false;
 
 //#define I2C_WITH_DMA
 
+#define LCD_TOUCHSCREEN
+
 //SD card driver
 static const unsigned char sdVoltage=30; //Board powered @ 3.0V
 #define SD_ONE_BIT_DATABUS //Can't use 4 bit databus due to pin conflicts
