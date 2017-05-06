@@ -46,6 +46,8 @@ private:
 //    TouchscreenDriver& operator=(const TouchscreenDriver&);
 
     TouchscreenDriver() { init(); }
+    void write_reg(unsigned char reg_addr, unsigned char *data, int len);
+    void read_reg(unsigned char reg_addr, unsigned char *data, int len);
 };
 
 } //namespace miosix
