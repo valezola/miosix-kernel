@@ -20,8 +20,8 @@ enum event_t {
 
 struct touch_data_t {
     enum event_t event;
-    unsigned int touchID : 4; //TODO: is bitfield a good idea here?
-    unsigned int area : 4; 
+    uint8_t touchID;
+    uint8_t area; 
     uint8_t weight;
     uint16_t x; 
     uint16_t y;
@@ -30,7 +30,7 @@ struct touch_data_t {
 
 struct gesture_data_t {
     enum gesture_t gestureID;
-    unsigned int num_touches : 4; //TODO: is 4 bits, 2 bits or more better?
+    uint8_t num_touches;
     struct touch_data_t touches[2];
 };
 

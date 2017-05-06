@@ -24,9 +24,6 @@ void TouchscreenDriver::init()
     /*
      * Set all writable registers to their default values
      */
-    //uint8_t device_mode[1] = {0x00}; // Set the CTPM to Working Mode
-    //uint8_t ctrl[1] = {0x01}; // Set the CTPM to switch to monitor mode with no touching
-    //uint8_t g_mode[1] = {0x01}; // Set the CTPM to Interrupt Trigger mode, as default
 
     uint8_t device_mode = 0x00; // Set the CTPM to Working Mode
     uint8_t ctrl = 0x01; // Set the CTPM to switch to monitor mode with no touching
@@ -45,21 +42,65 @@ void TouchscreenDriver::init()
 void TouchscreenDriver::read_gesture(struct gesture_data_t& gesture_data)
 {
     /*
-     * To read from the FT6206 Touch Screen Module, we have to send a write command with
-     * the starting address of the registers to be read. It appears to be possible to
-     * read multiple registers in a single read command.
-     * 
+     * Read all the touch data as a byte array
      */
-
     uint8_t data_array[15];
     read_reg(0x00, data_array, 15);
 
-    //TODO: fill structure 
+    /*
+     * Fill gesture ID and number of touches
+     */
+    switch( data_array[0x01] )
+    {
+        case 0x10: gesture_data.gestureID = MOVE_UP; break;
+        case 0x14: gesture_data.gestureID = MOVE_RIGHT; break;
+        case 0x18: gesture_data.gestureID = MOVE_DOWN; break;
+        case 0x1C: gesture_data.gestureID = MOVE_LEFT; break;
+        case 0x48: gesture_data.gestureID = ZOOM_IN; break;
+        case 0x49: gesture_data.gestureID = ZOOM_OUT; break;
+        case 0x00: gesture_data.gestureID = NO_GESTURE; break;
+        default: gesture_data.gestureID = NO_GESTURE; break;
+    }
+
+    gesture_data.num_touches = data_array[0x02] & 0x0F;
+
+    /*
+     * Fill first touch structure
+     */
+    switch(data_array[0x03] & 0xC0) 
+    {
+        case 0b00000000: gesture_data.touches[0].event = PRESS_DOWN; break;
+        case 0b01000000: gesture_data.touches[0].event = LIFT_UP; break;
+        case 0b10000000: gesture_data.touches[0].event = CONTACT; break;
+        case 0b11000000: gesture_data.touches[0].event = NO_EVENT; break;
+        default: gesture_data.touches[0].event = NO_EVENT; break;
+    }
+    gesture_data.touches[0].touchID = (data_array[0x05] & 0xF0) >> 4;
+    gesture_data.touches[0].area = (data_array[0x08] & 0xF0) >> 4;
+    gesture_data.touches[0].weight = data_array[0x07];
+    gesture_data.touches[0].x = ((data_array[0x03] & 0x0F) << 8 ) | data_array[0x04];
+    gesture_data.touches[0].y = ((data_array[0x05] & 0x0F) << 8 ) | data_array[0x06];
+
+    /*
+     * Fill second touch structure
+     */
+    switch(data_array[0x09] & 0xC0) 
+    {
+        case 0b00000000: gesture_data.touches[1].event = PRESS_DOWN; break;
+        case 0b01000000: gesture_data.touches[1].event = LIFT_UP; break;
+        case 0b10000000: gesture_data.touches[1].event = CONTACT; break;
+        case 0b11000000: gesture_data.touches[1].event = NO_EVENT; break;
+        default: gesture_data.touches[1].event = NO_EVENT; break;
+    }
+    gesture_data.touches[1].touchID = (data_array[0x0B] & 0xF0) >> 4;
+    gesture_data.touches[1].area = (data_array[0x0E] & 0xF0) >> 4;
+    gesture_data.touches[1].weight = data_array[0x0D];
+    gesture_data.touches[1].x = ((data_array[0x09] & 0x0F) << 8 ) | data_array[0x0A];
+    gesture_data.touches[1].y = ((data_array[0x0B] & 0x0F) << 8 ) | data_array[0x0C];
 
 }
 
 void TouchscreenDriver::write_reg(unsigned char reg_addr, unsigned char *data, int len)
-//void TouchscreenDriver::write_reg(uint8_t reg_addr, void* data, int len)
 {
     /*
      * To write a register, we send the register address followed by the data to write
@@ -79,10 +120,10 @@ void TouchscreenDriver::write_reg(unsigned char reg_addr, unsigned char *data, i
 void TouchscreenDriver::read_reg(unsigned char reg_addr, unsigned char *data, int len)
 {
     /*
-     * To read from a register, we send a write packet containing only the address of the
-     * register to be read, followed by a stop bit. Then we send a read command.
+     * To read from the FT6206 Touch Screen Module, we have to send a write message with
+     * the address of the first register to be read. It appears to be possible to
+     * read multiple registers in a single read command.
      */
-
     i2c.send(LCD_I2C_ADDR, &reg_addr, 1);
     i2c.recv(LCD_I2C_ADDR, data, len);
 }
