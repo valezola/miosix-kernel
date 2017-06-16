@@ -50,6 +50,9 @@
 
 namespace miosix {
 
+typedef Gpio<GPIOB_BASE,8> scl;
+typedef Gpio<GPIOB_BASE,9> sda;
+
 //
 // Initialization
 //
@@ -223,6 +226,11 @@ void IRQbspInit()
                     RCC_AHB1ENR_GPIOIEN;
     RCC_SYNC();
     #endif //__ENABLE_XRAM
+
+    sda::mode(Mode::ALTERNATE);
+    sda::alternateFunction(4);
+    scl::mode(Mode::ALTERNATE);
+    scl::alternateFunction(4);
 
     _led::mode(Mode::OUTPUT);
     ledOn();
