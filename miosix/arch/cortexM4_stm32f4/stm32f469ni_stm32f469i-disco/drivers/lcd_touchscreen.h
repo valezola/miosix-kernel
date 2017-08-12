@@ -50,6 +50,7 @@ namespace miosix
         TouchscreenDriver() { init(); }
         void write_reg(unsigned char reg_addr, unsigned char *data, int len);
         void read_reg(unsigned char reg_addr, unsigned char *data, int len);
+        void reset();
         
 };
 
