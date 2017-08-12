@@ -22,14 +22,13 @@ TouchscreenDriver& TouchscreenDriver::instance()
 
 
 void EXTI9_5_IRQHandler() {
+
     saveContext();
     //read_reg(0x00, data_array, BUFLEN);
     restoreContext();
 }
 
 void TouchscreenDriver::init() {
-
-    i2c.init();
 
     /* Clear packet buffer first */
     int i;
@@ -38,11 +37,29 @@ void TouchscreenDriver::init() {
     }
 
     /*
+     * Interrupt registers configuration
+     */
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN; /* Enable SYSCFG for EXTI-GPIO mapping */
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOJEN; /* Enable GPIO J for interrupt */
+    RCC_SYNC();
+
+    typedef Gpio<GPIOJ_BASE,5> INT;
+
+    INT::mode(Mode::INPUT);
+    EXTI->IMR |= EXTI_IMR_MR5; /* Set interrupt mask bit */
+    EXTI->FTSR |= EXTI_FTSR_TR5; /* Configure interrupt for falling edge */
+    EXTI->PR |= EXTI_PR_PR5; /* Clear pending bit */
+    SYSCFG->EXTICR[2] |= SYSCFG_EXTICR2_EXTI5_PJ; /*Configure EXTI5 for pin PJ5*/
+
+    /*
      * Inizialize NVIC interrupt line corresponding to EXTI5
      */
     NVIC_SetPriority(EXTI9_5_IRQn,10); //Same priority as i2c bus
     NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
     NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+
+    i2c.init();
 
 
     /*
