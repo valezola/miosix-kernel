@@ -8,9 +8,10 @@
 
 using namespace miosix;
 
+typedef Gpio<GPIOJ_BASE,5> INT;
+typedef Gpio<GPIOH_BASE,7> RST;
 
 static I2C1Driver& i2c = I2C1Driver::instance();
-
 unsigned char data_array[BUFLEN]; // received data buffer
 
 TouchscreenDriver& TouchscreenDriver::instance()
@@ -28,6 +29,34 @@ void EXTI9_5_IRQHandler() {
     restoreContext();
 }
 
+void reset() {
+
+    /*
+     * Send a low pulse on the reset line for more than 1ms
+     */
+    RST::low();
+    delayUs(1500);
+    RST::high();
+}
+
+void interrupt_wake_up() {
+
+    /*
+     * The CTPM can wake up from hibernation by receiving a low pulse on the
+     * interrupt line. The pulse must last between 0.5 ms and 1 ms.
+     *
+     * After sending the pulse, INT needs to be set to input mode again to
+     * work as interrupt line.
+     */
+    INT::mode(Mode::OUTPUT);
+    INT::low();
+    delayUs(800);
+    INT::high();
+
+    INT::mode(Mode::INPUT);
+
+}
+
 void TouchscreenDriver::init() {
 
     /* Clear packet buffer first */
@@ -43,8 +72,6 @@ void TouchscreenDriver::init() {
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOJEN; /* Enable GPIO J for interrupt */
     RCC_SYNC();
 
-    typedef Gpio<GPIOJ_BASE,5> INT;
-
     INT::mode(Mode::INPUT);
     EXTI->IMR |= EXTI_IMR_MR5; /* Set interrupt mask bit */
     EXTI->FTSR |= EXTI_FTSR_TR5; /* Configure interrupt for falling edge */
@@ -58,6 +85,7 @@ void TouchscreenDriver::init() {
     NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
     NVIC_EnableIRQ(EXTI9_5_IRQn);
 
+    RST::mode(Mode::OUTPUT); /* Initialize reset line */
 
     i2c.init();
 
