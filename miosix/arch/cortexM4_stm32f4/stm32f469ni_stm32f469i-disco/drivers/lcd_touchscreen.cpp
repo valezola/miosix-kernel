@@ -12,7 +12,8 @@ typedef Gpio<GPIOJ_BASE,5> INT;
 typedef Gpio<GPIOH_BASE,7> RST;
 
 static I2C1Driver& i2c = I2C1Driver::instance();
-unsigned char data_array[BUFLEN]; // received data buffer
+Thread *reading = 0; // Thread waiting to read
+static Mutex mutex;
 
 TouchscreenDriver& TouchscreenDriver::instance()
 {
@@ -25,7 +26,9 @@ TouchscreenDriver& TouchscreenDriver::instance()
 void EXTI9_5_IRQHandler() {
 
     saveContext();
-    //read_reg(0x00, data_array, BUFLEN);
+    if (reading) {
+        reading->IRQwakeup();
+    }
     restoreContext();
 }
 
@@ -58,12 +61,6 @@ void interrupt_wake_up() {
 }
 
 void TouchscreenDriver::init() {
-
-    /* Clear packet buffer first */
-    int i;
-    for (i=0; i<BUFLEN; i++) {
-        data_array[i] = 0x00;
-    }
 
     /*
      * Interrupt registers configuration
@@ -108,7 +105,8 @@ void TouchscreenDriver::init() {
     uint8_t distance_ud = 0x19; // Max distance for up and down gesture
     uint8_t distance_zoom = 0x32; // Max distance for up and down gesture
 
-    uint8_t g_mode = 0x01; // Set the CTPM to Interrupt Trigger mode, as default
+    //uint8_t g_mode = 0x01; // Set the CTPM to Interrupt Trigger mode
+    uint8_t g_mode = 0x00; // Set the CTPM to Interrupt Polling mode
     uint8_t power_mode = 0x00; 
     uint8_t state = 0x01; // Operating mode
 
@@ -134,11 +132,19 @@ void TouchscreenDriver::init() {
 
 void TouchscreenDriver::read_gesture(struct gesture_data_t& gesture_data)
 {
+    /* Clear packet buffer first */
+    unsigned char data_array[BUFLEN];
+    int i;
+    for (i=0; i<BUFLEN; i++) {
+        data_array[i] = 0x00;
+    }
 
-    /*
-     * We use the buffered data from the last read packet to fill the
-     * gesture_data structure
-     */
+    {
+        Lock<Mutex> lock(mutex);
+        reading = Thread::getCurrentThread();
+        reading->wait();
+        read_reg(0x00, data_array, BUFLEN);
+    }
 
     /*
      * Fill gesture ID and number of touches

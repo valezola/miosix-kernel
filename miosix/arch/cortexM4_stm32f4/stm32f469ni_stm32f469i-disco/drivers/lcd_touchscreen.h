@@ -52,6 +52,7 @@ namespace miosix
         void read_reg(unsigned char reg_addr, unsigned char *data, int len);
         void reset();
         void interrupt_wake_up();
+
         
 };
 
