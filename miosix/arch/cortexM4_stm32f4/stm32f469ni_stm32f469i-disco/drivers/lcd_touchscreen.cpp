@@ -73,7 +73,7 @@ void TouchscreenDriver::init() {
     EXTI->IMR |= EXTI_IMR_MR5; /* Set interrupt mask bit */
     EXTI->FTSR |= EXTI_FTSR_TR5; /* Configure interrupt for falling edge */
     EXTI->PR |= EXTI_PR_PR5; /* Clear pending bit */
-    SYSCFG->EXTICR[2] |= SYSCFG_EXTICR2_EXTI5_PJ; /*Configure EXTI5 for pin PJ5*/
+    SYSCFG->EXTICR[1] |= SYSCFG_EXTICR2_EXTI5_PJ; /*Configure EXTI5 for pin PJ5*/
 
     /*
      * Inizialize NVIC interrupt line corresponding to EXTI5
