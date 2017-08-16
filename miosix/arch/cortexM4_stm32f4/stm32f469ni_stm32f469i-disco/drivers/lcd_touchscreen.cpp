@@ -2,6 +2,7 @@
 
 #include "drivers/stm32f2_f4_i2c.h"
 #include "lcd_touchscreen.h"
+#include <kernel/scheduler/scheduler.h>
 
 #define LCD_I2C_ADDR ((unsigned char) 0x54) 
 #define BUFLEN (0xbd)
@@ -23,14 +24,24 @@ TouchscreenDriver& TouchscreenDriver::instance()
 }
 
 
-void EXTI9_5_IRQHandler() {
+void __attribute__((naked)) EXTI9_5_IRQHandler() {
 
     saveContext();
-    if (reading) {
-        reading->IRQwakeup();
-    }
+    asm volatile("bl _Z8exti9irqv");
     restoreContext();
 }
+
+void exti9irq() {
+    if (reading) {
+        reading->IRQwakeup();
+        if(reading->IRQgetPriority()> Thread::IRQgetCurrentThread()->IRQgetPriority()) {
+            Scheduler::IRQfindNextThread();
+        }
+	reading = 0;
+    }
+
+}
+
 
 void reset() {
 
@@ -140,11 +151,16 @@ void TouchscreenDriver::read_gesture(struct gesture_data_t& gesture_data)
     }
 
     {
-        Lock<Mutex> lock(mutex);
+        FastInterruptDisableLock dLock;
         reading = Thread::getCurrentThread();
-        reading->wait();
-        read_reg(0x00, data_array, BUFLEN);
+        Thread::IRQwait();
+        {
+            FastInterruptEnableLock eLock(dLock);
+            Thread::yield();
+        }
     }
+
+    read_reg(0x00, data_array, BUFLEN);
 
     /*
      * Fill gesture ID and number of touches
