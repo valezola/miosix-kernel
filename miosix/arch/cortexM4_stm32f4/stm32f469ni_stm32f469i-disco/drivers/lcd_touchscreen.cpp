@@ -151,12 +151,15 @@ void TouchscreenDriver::read_gesture(struct gesture_data_t& gesture_data)
     }
 
     {
-        FastInterruptDisableLock dLock;
-        reading = Thread::getCurrentThread();
-        Thread::IRQwait();
+        Lock<Mutex> lock(mutex);
         {
-            FastInterruptEnableLock eLock(dLock);
-            Thread::yield();
+            FastInterruptDisableLock dLock;
+            reading = Thread::getCurrentThread();
+            Thread::IRQwait();
+            {
+                FastInterruptEnableLock eLock(dLock);
+                Thread::yield();
+            }
         }
     }
 
