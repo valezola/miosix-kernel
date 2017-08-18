@@ -116,8 +116,7 @@ void TouchscreenDriver::init() {
     uint8_t distance_ud = 0x19; // Max distance for up and down gesture
     uint8_t distance_zoom = 0x32; // Max distance for up and down gesture
 
-    //uint8_t g_mode = 0x01; // Set the CTPM to Interrupt Trigger mode
-    uint8_t g_mode = 0x00; // Set the CTPM to Interrupt Polling mode
+    uint8_t g_mode = 0x01; // Set the CTPM to Interrupt Trigger mode
     uint8_t power_mode = 0x00; 
     uint8_t state = 0x01; // Operating mode
 
