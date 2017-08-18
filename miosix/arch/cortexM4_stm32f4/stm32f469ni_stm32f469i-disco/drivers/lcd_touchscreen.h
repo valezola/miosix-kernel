@@ -42,16 +42,15 @@ namespace miosix
 
         void read_gesture(struct gesture_data_t& gesture_data);
 
+        void reset();
+        void interrupt_wake_up();
     private:
-    //    TouchscreenDriver(const TouchscreenDriver&);
-    //    TouchscreenDriver& operator=(const TouchscreenDriver&);
+        TouchscreenDriver(const TouchscreenDriver&);
+        TouchscreenDriver& operator=(const TouchscreenDriver&);
 
-        //TouchscreenDriver() {  }
         TouchscreenDriver() { init(); }
         void write_reg(unsigned char reg_addr, unsigned char *data, int len);
         void read_reg(unsigned char reg_addr, unsigned char *data, int len);
-        void reset();
-        void interrupt_wake_up();
 
         
 };
