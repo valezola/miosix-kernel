@@ -1,8 +1,9 @@
-#ifdef LCD_TOUCHSCREEN 
-
 #include "drivers/stm32f2_f4_i2c.h"
 #include "lcd_touchscreen.h"
 #include <kernel/scheduler/scheduler.h>
+#include "miosix.h"
+
+#ifdef LCD_TOUCHSCREEN 
 
 #define LCD_I2C_ADDR ((unsigned char) 0x54) 
 #define BUFLEN (0xbd)

@@ -1,3 +1,7 @@
+#ifndef LCD_TOUCHSCREEN_H
+#define LCD_TOUCHSCREEN_H
+
+#include "board_settings.h"
 #ifdef LCD_TOUCHSCREEN
 
 /**
@@ -58,3 +62,4 @@ namespace miosix
 } //namespace miosix
 
 #endif //LCD_TOUCHSCREEN
+#endif //LCD_TOUCHSCREEN_H
